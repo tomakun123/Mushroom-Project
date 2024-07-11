@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from tensorflow import keras
 from keras import layers
+from keras.models import Sequential
 
 #Creating paths for data preprocessing
 data_train_path = "Data_Train"
@@ -87,6 +88,27 @@ def plot_images(train_data, data_categories_train):
             plt.show()
     return "Completed Printing of Images"
 
+#Creation of Model to Deploy
+def training_sequence(epoch_size, test_file, val_file):
+    model = Sequential([
+        layers.Rescaling(1./255),
+        layers.Conv2D(16, 3, padding='same', activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Conv2D(32, 3, padding='same', activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Conv2D(64, 3, padding='same', activation='relu'),
+        layers.Flatten(),
+        layers.Dropout(0.2),
+        layers.Dense(128),
+        layers.Dense(len(data_categories_test))
+    ])
+
+    model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+
+    history = model.fit(test_file, validation_data=val_file, epochs=epoch_size)
+
+    return history
+
 #This is what will be used to actually output what I need
 print("starting preprocessing")
 train_data(data_train_path, img_width, img_height)
@@ -97,3 +119,5 @@ print("completed preprocessing")
 #Printing Images from training data using matplotlib
 print("Printing Images using matplotlib")
 plot_images(data_train, data_categories_train)
+
+training_sequence(25, data_test, data_validate)
